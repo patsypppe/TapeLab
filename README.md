@@ -14,7 +14,11 @@ project contributes:
 4. Alpha, Sharpe and drawdown vs buy-and-hold with confidence intervals, not point estimates
 5. TapeLab's retrieval feeding TradingAgents' fundamentals analyst, compared against its default tools
 
+## Quickstart
+    .venv/bin/python -m tapelab.demo   # offline end-to-end run on SYNTHETIC prices; not evidence of performance
+
 ## Status
+- [x] Offline agent skeleton: technical + filings-backed fundamentals analysts -> trader -> backtest vs buy-and-hold
 - [x] Chunker, BM25 + RRF, EDGAR client, FastAPI skeleton, CI
 - [x] tradeval: Sharpe, max drawdown, alpha, ablation grid, leakage + entry-date checks
 - [ ] Ingestion: EDGAR -> chunks -> Postgres (pgvector) (embeddings + reranker)

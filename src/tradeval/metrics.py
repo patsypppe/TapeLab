@@ -40,3 +40,12 @@ def ablation_grid(**axes: list) -> list[dict]:
     """Cartesian product of config axes, e.g. debate_rounds=[0,1,3], risk_team=[False,True]."""
     keys = list(axes)
     return [dict(zip(keys, vals)) for vals in product(*axes.values())]
+
+
+def sortino(returns: list[float], periods_per_year: int = 252) -> float:
+    """Annualized return per unit of downside risk."""
+    if len(returns) < 2:
+        return 0.0
+    mean = sum(returns) / len(returns)
+    down = math.sqrt(sum(min(r, 0.0) ** 2 for r in returns) / len(returns))
+    return 0.0 if down == 0 else mean / down * math.sqrt(periods_per_year)
