@@ -1,0 +1,7 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/tapelab}
+    username: ${DB_USER:tapelab}
+    password: ${DB_PASSWORD:tapelab}
+  jpa:
+    hibernate.ddl-auto: update
