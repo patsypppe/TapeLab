@@ -5,10 +5,12 @@ from collections import Counter
 
 
 def tokenize(text: str) -> list[str]:
+    """Lowercase and split text into word tokens, keeping $, % and . inside numbers."""
     return re.findall(r"[a-z0-9$%.]+", text.lower())
 
 
 def bm25_rank(query: str, docs: list[str], k1: float = 1.5, b: float = 0.75) -> list[int]:
+    """Return doc indices ordered by BM25 keyword relevance to the query."""
     toks = [tokenize(d) for d in docs]
     avg = sum(map(len, toks)) / max(len(toks), 1) or 1.0
     df: Counter[str] = Counter()

@@ -28,6 +28,7 @@ public class ExperimentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    /** Validates a new experiment request, expands it into jobs and saves them. */
     public Map<String, Object> create(@Valid @RequestBody CreateRequest req) {
         long id = ids.incrementAndGet();
         var cells = ExperimentGrid.expand(req.tickers(), req.dates(), req.configs());
@@ -36,6 +37,7 @@ public class ExperimentController {
     }
 
     @GetMapping("/{id}")
+    /** Returns how many of an experiment's jobs are in each status. */
     public Map<Job.Status, Long> status(@PathVariable long id) {
         Map<Job.Status, Long> out = new EnumMap<>(Job.Status.class);
         Arrays.stream(Job.Status.values()).forEach(s -> out.put(s, jobs.countByExperimentIdAndStatus(id, s)));

@@ -11,6 +11,7 @@ public final class ExperimentGrid {
 
     private ExperimentGrid() {}
 
+    /** Builds one job spec for every ticker, date and config combination. */
     public static List<Cell> expand(List<String> tickers, List<LocalDate> dates, List<String> configs) {
         List<Cell> cells = new ArrayList<>(tickers.size() * dates.size() * configs.size());
         for (String config : configs) {

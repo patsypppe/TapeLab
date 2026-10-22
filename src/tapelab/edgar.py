@@ -6,9 +6,11 @@ BASE = "https://data.sec.gov"
 
 class EdgarClient:
     def __init__(self, user_agent: str):
+        """Create an HTTP client that sends the User-Agent header the SEC requires."""
         self._http = httpx.Client(headers={"User-Agent": user_agent}, timeout=30)
 
     def recent_filings(self, cik: int, form: str = "10-K") -> list[dict]:
+        """Fetch a company's recent filings from the SEC and keep those of the given form type."""
         r = self._http.get(f"{BASE}/submissions/CIK{cik:010d}.json")
         r.raise_for_status()
         recent = r.json()["filings"]["recent"]

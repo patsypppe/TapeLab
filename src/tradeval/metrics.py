@@ -3,6 +3,7 @@ from itertools import product
 
 
 def sharpe(returns: list[float], periods_per_year: int = 252, rf: float = 0.0) -> float:
+    """Annualized return per unit of risk."""
     if len(returns) < 2:
         return 0.0
     ex = [r - rf / periods_per_year for r in returns]
@@ -23,6 +24,7 @@ def max_drawdown(returns: list[float]) -> float:
 
 
 def cumulative_return(returns: list[float]) -> float:
+    """Total compounded return over the period."""
     total = 1.0
     for r in returns:
         total *= 1 + r

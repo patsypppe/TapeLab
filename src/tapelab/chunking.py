@@ -11,6 +11,7 @@ class Chunk:
 
 
 def _is_table_line(line: str) -> bool:
+    """True if the line belongs to a markdown table."""
     return line.lstrip().startswith("|")
 
 
