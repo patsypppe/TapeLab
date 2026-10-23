@@ -130,7 +130,7 @@ The Java service (Spring Boot 3.4, Java 21, Spring Data JPA) is the only thing t
 
 **What exists today**
 
-The current code has `POST /experiments` and `GET /experiments/{id}`, with a `Job` entity, repository and grid expander, covered by 3 tests on an H2 test database. These come from an earlier design and will be removed and replaced by the endpoints above. Known gaps: experiment ids come from an in-memory counter, and the tests do not yet run against real Postgres (Testcontainers is the fix).
+The Java service is currently an empty Spring Boot shell (`BackendApplication`) with one smoke test that checks the app starts. The earlier experiment endpoints were removed because the product does not need them. Known gap: the test runs on an H2 database, not real Postgres (Testcontainers is the fix).
 
 ## Paper trading, testing and setup
 
@@ -150,7 +150,7 @@ tapelab/
   src/tapelab/        chunking, retrieval, grounding, edgar, api, demo
     agents/           technical, fundamentals, trader, llm, gemini
   src/tradeval/       backtest, metrics, leakage
-  orchestrator/       Java Spring Boot backend
+  backend/            Java Spring Boot backend
   tests/              Python tests
   docs/               product and technical documents
   .github/workflows/  CI
