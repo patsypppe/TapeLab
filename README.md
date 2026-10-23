@@ -17,6 +17,10 @@ project contributes:
 ## Quickstart
     .venv/bin/python -m tapelab.demo   # offline end-to-end run on SYNTHETIC prices; not evidence of performance
 
+## Live Gemini check
+    cp .env.example .env   # add GEMINI_API_KEY; .env is git-ignored
+    .venv/bin/python -m tapelab.check_gemini
+
 ## Status
 - [x] Offline agent skeleton: technical + filings-backed fundamentals analysts -> trader -> backtest vs buy-and-hold
 - [x] Chunker, BM25 + RRF, EDGAR client, FastAPI skeleton, CI

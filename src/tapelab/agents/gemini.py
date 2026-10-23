@@ -2,6 +2,9 @@ import json
 import os
 
 import httpx
+from dotenv import load_dotenv
+
+load_dotenv()  # picks up a local .env if present; real env vars still win
 
 URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
