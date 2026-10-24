@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DEFAULT_URL = "postgresql://tapelab:tapelab@localhost:5432/tapelab"
+DEFAULT_URL = "postgresql://tapelab:tapelab@localhost:5434/tapelab"
 MIGRATIONS_DIR = Path(__file__).resolve().parents[2] / "db" / "migrations"
 
 
