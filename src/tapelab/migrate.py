@@ -1,4 +1,4 @@
-"""Applies the numbered SQL files in db/migrations/ to Postgres, each one exactly once."""
+"""Applies the Flyway-named SQL files (V1__..., V2__...) from the backend to Postgres, once each."""
 import os
 from pathlib import Path
 
@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DEFAULT_URL = "postgresql://tapelab:tapelab@localhost:5434/tapelab"
-MIGRATIONS_DIR = Path(__file__).resolve().parents[2] / "db" / "migrations"
+MIGRATIONS_DIR = Path(__file__).resolve().parents[2] / "backend" / "src" / "main" / "resources" / "db" / "migration"
 
 
 def connect() -> psycopg.Connection:
@@ -24,7 +24,7 @@ def apply_migrations(conn: psycopg.Connection, directory: Path = MIGRATIONS_DIR)
     )
     done = {row[0] for row in conn.execute("SELECT version FROM schema_migrations")}
     applied = []
-    for path in sorted(directory.glob("*.sql")):
+    for path in sorted(directory.glob("V*.sql"), key=lambda f: int(f.name[1:].split("__")[0])):
         if path.name in done:
             continue
         conn.execute(path.read_text())

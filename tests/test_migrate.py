@@ -6,8 +6,8 @@ from tapelab.migrate import apply_migrations
 
 def test_creates_prices_and_is_idempotent(conn):
     assert apply_migrations(conn) == [
-        "001_create_prices.sql", "002_create_filings.sql", "003_create_filing_scores.sql",
-        "004_create_decisions.sql"]
+        "V1__create_prices.sql", "V2__create_filings.sql", "V3__create_filing_scores.sql",
+        "V4__create_decisions.sql"]
     assert apply_migrations(conn) == []  # second run applies nothing
     conn.execute("INSERT INTO prices VALUES ('AAPL', '2025-01-02', 10, 12, 9, 11, 1000)")
     assert conn.execute("SELECT count(*) FROM prices").fetchone()[0] == 1

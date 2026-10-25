@@ -1,11 +1,8 @@
 package dev.tapelab.backend;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,8 +10,9 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
 /**
- * Base class for tests that need the real database tables. It builds a throwaway schema from the
- * SQL files in db/migrations, points the app at it, and drops it when the tests finish.
+ * Base class for tests that need the real database tables. It creates an empty throwaway schema and
+ * points the app at it; Flyway then builds the tables from the migration files at startup, and the
+ * schema is dropped when the tests finish.
  */
 @SpringBootTest
 @ExtendWith(PostgresAvailableCondition.class)
@@ -45,13 +43,6 @@ abstract class PostgresTest {
         }
         try (Connection c = DriverManager.getConnection(URL, USER, PASSWORD); Statement s = c.createStatement()) {
             s.execute("CREATE SCHEMA " + SCHEMA);
-            s.execute("SET search_path TO " + SCHEMA);
-            try (var files = Files.list(Path.of("..", "db", "migrations"))) {
-                List<Path> migrations = files.filter(f -> f.toString().endsWith(".sql")).sorted().toList();
-                for (Path migration : migrations) {
-                    s.execute(Files.readString(migration));
-                }
-            }
         }
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try (Connection c = DriverManager.getConnection(URL, USER, PASSWORD); Statement s = c.createStatement()) {
