@@ -6,7 +6,8 @@ from tapelab.migrate import apply_migrations
 
 def test_creates_prices_and_is_idempotent(conn):
     assert apply_migrations(conn) == [
-        "001_create_prices.sql", "002_create_filings.sql", "003_create_filing_scores.sql"]
+        "001_create_prices.sql", "002_create_filings.sql", "003_create_filing_scores.sql",
+        "004_create_decisions.sql"]
     assert apply_migrations(conn) == []  # second run applies nothing
     conn.execute("INSERT INTO prices VALUES ('AAPL', '2025-01-02', 10, 12, 9, 11, 1000)")
     assert conn.execute("SELECT count(*) FROM prices").fetchone()[0] == 1
@@ -63,3 +64,33 @@ def test_filing_scores_are_one_per_model_and_within_range(conn):
     conn.rollback()
     with pytest.raises(psycopg.errors.CheckViolation):  # score must be between -1 and 1
         conn.execute(insert, (filing_id, "m3", 1.5))
+
+
+DECISION = ("INSERT INTO decisions (ticker, decided_for, position, reasons) "
+            "VALUES ('AAPL', '2025-11-03', %s, '[{\"analyst\": \"technical\", \"score\": 0.3}]')")
+
+
+def test_decisions_store_reasons_and_one_per_ticker_per_day(conn):
+    apply_migrations(conn)
+    conn.execute(DECISION, (1,))
+    conn.commit()
+    reasons = conn.execute("SELECT reasons FROM decisions").fetchone()[0]
+    assert reasons[0]["analyst"] == "technical"  # stored as real JSON, not text
+    with pytest.raises(psycopg.errors.UniqueViolation):  # the day cannot be redone
+        conn.execute(DECISION, (0,))
+    conn.rollback()
+    with pytest.raises(psycopg.errors.CheckViolation):  # position must be between 0 and 1
+        conn.execute("INSERT INTO decisions (ticker, decided_for, position, reasons) "
+                     "VALUES ('MSFT', '2025-11-03', 1.5, '[]')")
+
+
+def test_decisions_cannot_be_changed_or_removed(conn):
+    apply_migrations(conn)
+    conn.execute(DECISION, (1,))
+    conn.commit()
+    for statement in ("UPDATE decisions SET position = 0", "DELETE FROM decisions",
+                      "TRUNCATE decisions"):
+        with pytest.raises(psycopg.errors.RaiseException):
+            conn.execute(statement)
+        conn.rollback()
+    assert conn.execute("SELECT position FROM decisions").fetchone()[0] == 1
