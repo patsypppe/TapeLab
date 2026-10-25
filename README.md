@@ -21,6 +21,8 @@ The backend owns the database schema (Flyway migrations in `backend/src/main/res
     cd backend && ./mvnw spring-boot:run # creates the tables on first start, then serves on :8081
     python -m tapelab.prices AAPL MSFT NVDA --start 2023-01-01
     python -m tapelab.filings AAPL MSFT NVDA
+    python -m tapelab.score AAPL MSFT NVDA    # scores each latest 10-K with Gemini (cached)
+    python -m tapelab.decide AAPL MSFT NVDA   # saves one insert-only decision per ticker per day
 
 ## Quickstart
     .venv/bin/python -m tapelab.demo   # offline end-to-end run on SYNTHETIC prices; not evidence of performance
