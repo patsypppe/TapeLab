@@ -24,6 +24,13 @@ The backend owns the database schema (Flyway migrations in `backend/src/main/res
     python -m tapelab.score AAPL MSFT NVDA    # scores each latest 10-K with Gemini (cached)
     python -m tapelab.decide AAPL MSFT NVDA   # saves one insert-only decision per ticker per day
 
+## See it in the browser
+With the backend running (`cd backend && ./mvnw spring-boot:run`), in a second terminal:
+
+    cd frontend && npm install && npm run dev    # open http://localhost:5173
+
+It shows the saved decisions with their reasons, a price chart and recent prices.
+
 ## Quickstart
     .venv/bin/python -m tapelab.demo   # offline end-to-end run on SYNTHETIC prices; not evidence of performance
 

@@ -4,3 +4,48 @@ body {
   margin: 0 auto;
   padding: 16px;
 }
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  border-bottom: 1px solid #ddd;
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+button {
+  margin-right: 6px;
+}
+
+.long {
+  color: #1a7f37;
+  font-weight: 600;
+}
+
+.flat {
+  color: #666;
+  font-weight: 600;
+}
+
+.note {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.error {
+  color: #b00020;
+}
+
+td:first-child {
+  white-space: nowrap; /* keep dates on one line */
+}
