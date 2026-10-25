@@ -80,6 +80,26 @@ def save_prices(conn: psycopg.Connection, rows: list[PriceRow]) -> int:
     return len(rows)
 
 
+def closes_through(conn: psycopg.Connection, ticker: str, as_of: date, limit: int = 60) -> list[float]:
+    """The last `limit` closing prices on or before as_of, oldest first, never anything later."""
+    rows = conn.execute(
+        "SELECT close FROM prices WHERE ticker = %s AND date <= %s ORDER BY date DESC LIMIT %s",
+        (ticker.upper(), as_of, limit),
+    ).fetchall()
+    return [float(r[0]) for r in reversed(rows)]
+
+
+def latest_price_date(conn: psycopg.Connection, ticker: str) -> date | None:
+    """The most recent day we hold a price for, or None if the ticker has no prices."""
+    return conn.execute("SELECT max(date) FROM prices WHERE ticker = %s", (ticker.upper(),)).fetchone()[0]
+
+
+def has_price_on(conn: psycopg.Connection, ticker: str, day: date) -> bool:
+    """True if there is a price row for this ticker on exactly this day (so it was a trading day)."""
+    return conn.execute(
+        "SELECT 1 FROM prices WHERE ticker = %s AND date = %s", (ticker.upper(), day)).fetchone() is not None
+
+
 def main() -> None:
     """Command-line entry point: python -m tapelab.prices AAPL MSFT --start 2020-01-01."""
     parser = argparse.ArgumentParser(description="Load daily prices into Postgres")

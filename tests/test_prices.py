@@ -4,7 +4,15 @@ from decimal import Decimal
 import httpx
 import pytest
 
-from tapelab.prices import PriceRow, fetch_prices, parse_yahoo_chart, save_prices
+from tapelab.prices import (
+    PriceRow,
+    closes_through,
+    fetch_prices,
+    has_price_on,
+    latest_price_date,
+    parse_yahoo_chart,
+    save_prices,
+)
 
 # Made-up data in the shape of Yahoo's chart response, not a real download.
 # Three days: a normal bar, a day with no data, and a normal bar. The first bar is scaled by 0.5,
@@ -63,3 +71,25 @@ def test_save_replaces_existing_day(conn):
     assert conn.execute("SELECT count(*) FROM prices").fetchone()[0] == 2
     assert conn.execute(
         "SELECT close, volume FROM prices WHERE date = '2025-01-02'").fetchone() == (Decimal(2), 5)
+
+
+def seed(conn):
+    rows = [PriceRow("AAPL", date(2025, 1, d), Decimal(d), Decimal(d), Decimal(d), Decimal(d * 10), 1)
+            for d in (2, 3, 6, 7)]
+    save_prices(conn, rows)
+
+
+def test_closes_through_returns_oldest_first_and_never_looks_past_the_date(conn):
+    seed(conn)
+    assert closes_through(conn, "aapl", date(2025, 1, 6)) == [20.0, 30.0, 60.0]
+    assert closes_through(conn, "AAPL", date(2025, 1, 6), limit=2) == [30.0, 60.0]
+    assert closes_through(conn, "AAPL", date(2025, 1, 1)) == []
+    assert closes_through(conn, "MSFT", date(2025, 1, 7)) == []
+
+
+def test_latest_price_date_and_has_price_on(conn):
+    seed(conn)
+    assert latest_price_date(conn, "AAPL") == date(2025, 1, 7)
+    assert latest_price_date(conn, "MSFT") is None
+    assert has_price_on(conn, "AAPL", date(2025, 1, 6)) is True
+    assert has_price_on(conn, "AAPL", date(2025, 1, 4)) is False  # a Saturday: no row
