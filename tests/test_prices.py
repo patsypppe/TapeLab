@@ -4,7 +4,6 @@ from decimal import Decimal
 import httpx
 import pytest
 
-from tapelab.migrate import apply_migrations
 from tapelab.prices import PriceRow, fetch_prices, parse_yahoo_chart, save_prices
 
 # Made-up data in the shape of Yahoo's chart response, not a real download.
@@ -56,7 +55,6 @@ def test_fetch_sends_ticker_dates_and_user_agent():
 
 
 def test_save_replaces_existing_day(conn):
-    apply_migrations(conn)
     rows = parse_yahoo_chart("AAPL", PAYLOAD)
     assert save_prices(conn, rows) == 2
     revised = [PriceRow("AAPL", date(2025, 1, 2), Decimal(1), Decimal(3), Decimal(1),

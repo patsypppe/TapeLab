@@ -5,9 +5,9 @@ import httpx
 import psycopg
 
 from .chunking import Chunk, chunk_filing
+from .db import connect
 from .edgar import FilingRef, fetch_document, list_filings, sec_client
 from .html_text import html_to_text
-from .migrate import connect
 
 
 def is_saved(conn: psycopg.Connection, accession: str) -> bool:

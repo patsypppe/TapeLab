@@ -7,7 +7,7 @@ from decimal import Decimal
 import httpx
 import psycopg
 
-from .migrate import connect
+from .db import connect
 
 CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
 USER_AGENT = "tapelab-research (personal project)"

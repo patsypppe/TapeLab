@@ -8,4 +8,4 @@ spring:
     password: ${DB_PASSWORD:tapelab}
   jpa:
     open-in-view: false
-    hibernate.ddl-auto: validate  # the SQL files in db/migrations own the schema; Java only checks it matches
+    hibernate.ddl-auto: validate  # the Flyway files in src/main/resources/db/migration own the schema; Java only checks it matches

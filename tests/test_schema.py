@@ -1,20 +1,13 @@
 import psycopg
 import pytest
 
-from tapelab.migrate import apply_migrations
 
-
-def test_creates_prices_and_is_idempotent(conn):
-    assert apply_migrations(conn) == [
-        "V1__create_prices.sql", "V2__create_filings.sql", "V3__create_filing_scores.sql",
-        "V4__create_decisions.sql"]
-    assert apply_migrations(conn) == []  # second run applies nothing
+def test_prices_accept_a_valid_row(conn):
     conn.execute("INSERT INTO prices VALUES ('AAPL', '2025-01-02', 10, 12, 9, 11, 1000)")
     assert conn.execute("SELECT count(*) FROM prices").fetchone()[0] == 1
 
 
 def test_prices_rejects_bad_rows(conn):
-    apply_migrations(conn)
     conn.commit()
     with pytest.raises(psycopg.errors.CheckViolation):  # high below low
         conn.execute("INSERT INTO prices VALUES ('AAPL', '2025-01-02', 10, 8, 9, 11, 1000)")
@@ -29,14 +22,12 @@ FILING = ("INSERT INTO filings (ticker, cik, form, accession, filed_at, url) "
 
 
 def test_filings_reject_duplicate_accession(conn):
-    apply_migrations(conn)
     conn.execute(FILING, ("0000320193-25-000001",))
     with pytest.raises(psycopg.errors.UniqueViolation):  # same SEC filing twice
         conn.execute(FILING, ("0000320193-25-000001",))
 
 
 def test_chunks_need_a_filing_and_a_valid_kind_and_go_with_it(conn):
-    apply_migrations(conn)
     filing_id = conn.execute(FILING, ("0000320193-25-000001",)).fetchone()[0]
     conn.execute("INSERT INTO filing_chunks (filing_id, idx, kind, text) VALUES (%s, 0, 'table', 'x')",
                  (filing_id,))
@@ -53,7 +44,6 @@ def test_chunks_need_a_filing_and_a_valid_kind_and_go_with_it(conn):
 
 
 def test_filing_scores_are_one_per_model_and_within_range(conn):
-    apply_migrations(conn)
     filing_id = conn.execute(FILING, ("0000320193-25-000001",)).fetchone()[0]
     insert = "INSERT INTO filing_scores (filing_id, model, score, rationale) VALUES (%s, %s, %s, 'r')"
     conn.execute(insert, (filing_id, "m1", 0.5))
@@ -71,7 +61,6 @@ DECISION = ("INSERT INTO decisions (ticker, decided_for, position, reasons) "
 
 
 def test_decisions_store_reasons_and_one_per_ticker_per_day(conn):
-    apply_migrations(conn)
     conn.execute(DECISION, (1,))
     conn.commit()
     reasons = conn.execute("SELECT reasons FROM decisions").fetchone()[0]
@@ -85,7 +74,6 @@ def test_decisions_store_reasons_and_one_per_ticker_per_day(conn):
 
 
 def test_decisions_cannot_be_changed_or_removed(conn):
-    apply_migrations(conn)
     conn.execute(DECISION, (1,))
     conn.commit()
     for statement in ("UPDATE decisions SET position = 0", "DELETE FROM decisions",

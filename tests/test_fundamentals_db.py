@@ -4,7 +4,6 @@ from tapelab.agents.fundamentals import latest_filing_before, score_filing
 from tapelab.chunking import Chunk
 from tapelab.edgar import FilingRef
 from tapelab.filings import save_filing
-from tapelab.migrate import apply_migrations
 
 
 class FakeLLM:
@@ -29,7 +28,6 @@ def store(conn, accession: str, filed: date, texts: list[str]) -> int:
 
 
 def test_latest_filing_is_strictly_before_the_date(conn):
-    apply_migrations(conn)
     old = store(conn, "a-1", date(2024, 11, 1), ["x"])
     new = store(conn, "a-2", date(2025, 10, 31), ["x"])
     assert latest_filing_before(conn, "aapl", date(2025, 10, 31)) == (old, date(2024, 11, 1))
@@ -39,7 +37,6 @@ def test_latest_filing_is_strictly_before_the_date(conn):
 
 
 def test_score_sends_relevant_passages_and_is_cached_per_model(conn):
-    apply_migrations(conn)
     texts = [f"Unrelated note number {i} about office leases." for i in range(8)]
     texts.append("Revenue growth was strong and net income margin improved this year.")
     filing_id = store(conn, "a-1", date(2025, 10, 31), texts)
@@ -60,7 +57,6 @@ def test_score_sends_relevant_passages_and_is_cached_per_model(conn):
 
 
 def test_filing_without_text_gets_neutral_score_and_nothing_saved(conn):
-    apply_migrations(conn)
     filing_id = store(conn, "a-1", date(2025, 10, 31), [])
     llm = FakeLLM()
     assert score_filing(conn, llm, filing_id).score == 0.0

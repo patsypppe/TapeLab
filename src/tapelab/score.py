@@ -5,7 +5,7 @@ from datetime import date
 from .agents.fundamentals import latest_filing_before, score_filing
 from .agents.gemini import GeminiLLM
 from .agents.llm import RuleBasedLLM
-from .migrate import connect
+from .db import connect
 
 
 def main() -> None:

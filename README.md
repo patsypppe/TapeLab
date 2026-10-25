@@ -14,6 +14,14 @@ project contributes:
 4. Alpha, Sharpe and drawdown vs buy-and-hold with confidence intervals, not point estimates
 5. TapeLab's retrieval feeding TradingAgents' fundamentals analyst, compared against its default tools
 
+## Run order
+The backend owns the database schema (Flyway migrations in `backend/src/main/resources/db/migration`), so start it first:
+
+    docker compose up -d                 # Postgres on localhost:5434
+    cd backend && ./mvnw spring-boot:run # creates the tables on first start, then serves on :8081
+    python -m tapelab.prices AAPL MSFT NVDA --start 2023-01-01
+    python -m tapelab.filings AAPL MSFT NVDA
+
 ## Quickstart
     .venv/bin/python -m tapelab.demo   # offline end-to-end run on SYNTHETIC prices; not evidence of performance
 
