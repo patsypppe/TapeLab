@@ -23,6 +23,7 @@ The backend owns the database schema (Flyway migrations in `backend/src/main/res
     python -m tapelab.filings AAPL MSFT NVDA
     python -m tapelab.score AAPL MSFT NVDA    # scores each latest 10-K with Gemini (cached)
     python -m tapelab.decide AAPL MSFT NVDA   # saves one insert-only decision per ticker per day
+    python -m tradeval.report AAPL MSFT NVDA  # replays trend rules against buy-and-hold on stored prices
 
 ## See it in the browser
 With the backend running (`cd backend && ./mvnw spring-boot:run`), in a second terminal:
