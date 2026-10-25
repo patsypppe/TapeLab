@@ -1,7 +1,11 @@
+server:
+  port: ${PORT:8081}  # 8080 is often taken by other local projects
+
 spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5434/tapelab}
     username: ${DB_USER:tapelab}
     password: ${DB_PASSWORD:tapelab}
   jpa:
-    hibernate.ddl-auto: update
+    open-in-view: false
+    hibernate.ddl-auto: validate  # the SQL files in db/migrations own the schema; Java only checks it matches
