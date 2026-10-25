@@ -60,5 +60,7 @@ abstract class PostgresTest {
         registry.add("spring.datasource.url", () -> URL + "?currentSchema=" + SCHEMA);
         registry.add("spring.datasource.username", () -> USER);
         registry.add("spring.datasource.password", () -> PASSWORD);
+        // Tests must check the Flyway tables, never rebuild them, whatever stale config is in target/.
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
     }
 }
