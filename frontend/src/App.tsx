@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { getDecisions, getForecast, getPrices, type Decision, type Forecast, type Price } from './api'
 import { DecisionsTable } from './DecisionsTable'
 import { ForecastTable } from './ForecastTable'
+import { PredictionPanel } from './PredictionPanel'
 import { PriceChart } from './PriceChart'
 import { PricesTable } from './PricesTable'
 
@@ -78,6 +79,8 @@ export default function App() {
       {prices && (
         <>
           <PriceChart prices={prices} forecast={forecast} />
+          <h2>Predict a date range: {ticker}</h2>
+          <PredictionPanel key={ticker} ticker={ticker} lastDate={prices.at(-1)?.date ?? null} />
           {forecast ? (
             <>
               <h2>Next {forecast.horizon} trading days: {ticker}</h2>

@@ -12,6 +12,7 @@ export default defineConfig({
       '/prices': backend,
       '/decisions': backend,
       '/forecasts': backend,
+      '/predictions': backend,
     },
   },
   test: {

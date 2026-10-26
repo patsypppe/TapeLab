@@ -50,3 +50,38 @@ export function forecastChart(closes: number[], points: Range[], width: number, 
     ].join(' '),
   }
 }
+
+/** A price or amount with two decimals. */
+export const money = (n: number): string => n.toFixed(2)
+
+/** An amount with its sign, e.g. +1.25 or -0.40; a value that rounds to zero shows no sign. */
+export function signedMoney(n: number): string {
+  const rounded = Number(n.toFixed(2))
+  if (rounded === 0) return '0.00'
+  return (rounded > 0 ? '+' : '-') + Math.abs(rounded).toFixed(2)
+}
+
+/** The date `days` after (or before, if negative) an ISO date such as 2026-10-23. */
+export function addDays(isoDate: string, days: number): string {
+  return new Date(Date.parse(`${isoDate}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10)
+}
+
+type Summary = {
+  daysWithActual: number
+  meanAbsErrorPct: number | null
+  meanAbsDifference: number | null
+  insideRange: number
+}
+
+/** One plain sentence saying how the prediction did on the dates that already have an actual price. */
+export function describeSummary(s: Summary): string {
+  if (s.daysWithActual === 0 || s.meanAbsErrorPct === null || s.meanAbsDifference === null) {
+    return 'No actual prices yet for these dates, so there is nothing to score.'
+  }
+  const share = Math.round((s.insideRange / s.daysWithActual) * 100)
+  return (
+    `Over the ${s.daysWithActual} day(s) with actual prices: on average ${s.meanAbsErrorPct.toFixed(2)}% off ` +
+    `(${s.meanAbsDifference.toFixed(2)} in price). The real price was inside the 80% range on ` +
+    `${s.insideRange} of ${s.daysWithActual} days (${share}%).`
+  )
+}

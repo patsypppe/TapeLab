@@ -34,7 +34,9 @@ With the backend running (`cd backend && ./mvnw spring-boot:run`), in a second t
 
     cd frontend && npm install && npm run dev    # open http://localhost:5173
 
-It shows the saved decisions with their reasons, a price chart and recent prices.
+It shows the saved decisions with their reasons, a price chart with the 10-day forecast range, and a
+**Predict a date range** panel: pick two dates and it predicts each day's price from only the data before the
+range, then shows the actual price, the difference and the error where the dates have already happened.
 
 ## Quickstart
     .venv/bin/python -m tapelab.demo   # offline end-to-end run on SYNTHETIC prices; not evidence of performance
