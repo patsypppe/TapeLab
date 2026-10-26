@@ -29,6 +29,26 @@ The backend owns the database schema (Flyway migrations in `backend/src/main/res
     python -m tradeval.report AAPL MSFT NVDA  # replays trend rules against buy-and-hold on stored prices
     python -m tradeval.forecast_eval AAPL MSFT NVDA  # checks how well the 10-day forecast ranges were calibrated
 
+The steps from prices to predict can be done in one go with `python -m tapelab.daily` (see below).
+
+## Every day
+One command brings a watchlist up to date: prices, a new 10-K if there is one, the day's decision and the 10-day forecast.
+
+    python -m tapelab.daily AAPL MSFT NVDA          # add --llm rule to skip Gemini
+
+It is safe to run twice (finished work is reported as `unchanged`), one failing step never stops the others, and it
+exits 1 if anything failed. It only records a day's price once that day is final (after 4:30pm New York time), so run it
+in the evening. A warning means the newest price is more than 4 days old, i.e. the data may have stopped arriving.
+
+To run it on a schedule, use cron (`crontab -e`) with absolute paths, since cron has no shell profile or `.env` loading
+beyond what the program does itself. This runs at 5pm US Eastern on weekdays if your Mac is set to Eastern time (cron uses
+the machine's local time, so shift the hour otherwise):
+
+    0 17 * * 1-5  cd /path/to/tapelab && .venv/bin/python -m tapelab.daily AAPL MSFT NVDA >> daily.log 2>&1
+
+The Mac must be awake and Docker's Postgres running at that time. On a server, the same line works, or use a scheduler
+such as EventBridge that starts the command in a container.
+
 ## See it in the browser
 With the backend running (`cd backend && ./mvnw spring-boot:run`), in a second terminal:
 
