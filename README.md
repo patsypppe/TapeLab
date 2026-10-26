@@ -25,6 +25,7 @@ The backend owns the database schema (Flyway migrations in `backend/src/main/res
     python -m tapelab.filings AAPL MSFT NVDA
     python -m tapelab.score AAPL MSFT NVDA    # scores each latest 10-K with Gemini (cached)
     python -m tapelab.decide AAPL MSFT NVDA   # saves one insert-only decision per ticker per day
+    python -m tapelab.predict AAPL MSFT NVDA  # saves a 10-day price range per ticker (insert-only)
     python -m tradeval.report AAPL MSFT NVDA  # replays trend rules against buy-and-hold on stored prices
     python -m tradeval.forecast_eval AAPL MSFT NVDA  # checks how well the 10-day forecast ranges were calibrated
 

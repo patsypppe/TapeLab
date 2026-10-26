@@ -82,3 +82,20 @@ def test_decisions_cannot_be_changed_or_removed(conn):
             conn.execute(statement)
         conn.rollback()
     assert conn.execute("SELECT position FROM decisions").fetchone()[0] == 1
+
+
+FORECAST = ("INSERT INTO forecasts (ticker, as_of, model, horizon, last_close, points) "
+            "VALUES ('AAPL', '2025-01-03', 'random_walk', 10, 100, '[]')")
+
+
+def test_forecasts_are_one_per_ticker_day_and_model_and_never_change(conn):
+    conn.execute(FORECAST)
+    conn.commit()
+    with pytest.raises(psycopg.errors.UniqueViolation):
+        conn.execute(FORECAST)
+    conn.rollback()
+    for statement in ("UPDATE forecasts SET horizon = 5", "DELETE FROM forecasts", "TRUNCATE forecasts"):
+        with pytest.raises(psycopg.errors.RaiseException):
+            conn.execute(statement)
+        conn.rollback()
+    assert conn.execute("SELECT horizon FROM forecasts").fetchone()[0] == 10
