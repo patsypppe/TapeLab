@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { getDecisions, getPrices, type Decision, type Price } from './api'
+import { getDecisions, getForecast, getPrices, type Decision, type Forecast, type Price } from './api'
 import { DecisionsTable } from './DecisionsTable'
+import { ForecastTable } from './ForecastTable'
 import { PriceChart } from './PriceChart'
 import { PricesTable } from './PricesTable'
 
@@ -12,6 +13,7 @@ export default function App() {
   const [typed, setTyped] = useState('')
   const [decisions, setDecisions] = useState<Decision[] | null>(null)
   const [prices, setPrices] = useState<Price[] | null>(null)
+  const [forecast, setForecast] = useState<Forecast | null>(null)
   const [error, setError] = useState('')
   const [updated, setUpdated] = useState('never')
 
@@ -20,10 +22,15 @@ export default function App() {
 
     async function load() {
       try {
-        const [newDecisions, newPrices] = await Promise.all([getDecisions(), getPrices(ticker)])
+        const [newDecisions, newPrices, newForecast] = await Promise.all([
+          getDecisions(),
+          getPrices(ticker),
+          getForecast(ticker),
+        ])
         if (cancelled) return
         setDecisions(newDecisions)
         setPrices(newPrices)
+        setForecast(newForecast)
         setError('')
         setUpdated(new Date().toLocaleTimeString())
       } catch (e) {
@@ -70,7 +77,18 @@ export default function App() {
       </div>
       {prices && (
         <>
-          <PriceChart prices={prices} />
+          <PriceChart prices={prices} forecast={forecast} />
+          {forecast ? (
+            <>
+              <h2>Next {forecast.horizon} trading days: {ticker}</h2>
+              <ForecastTable forecast={forecast} />
+            </>
+          ) : (
+            <p className="note">
+              No forecast yet for {ticker}. Run <code>python -m tapelab.predict {ticker}</code>.
+            </p>
+          )}
+          <h2>Recent prices: {ticker}</h2>
           <PricesTable prices={prices} />
         </>
       )}

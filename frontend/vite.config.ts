@@ -11,6 +11,7 @@ export default defineConfig({
     proxy: {
       '/prices': backend,
       '/decisions': backend,
+      '/forecasts': backend,
     },
   },
   test: {
