@@ -2,6 +2,9 @@ server:
   port: ${PORT:8081}  # 8080 is often taken by other local projects
 
 spring:
+  mvc:
+    problemdetails:
+      enabled: true  # errors come back as JSON with a human-readable "detail" (RFC 9457)
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5434/tapelab}
     username: ${DB_USER:tapelab}

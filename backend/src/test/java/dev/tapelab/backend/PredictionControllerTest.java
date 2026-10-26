@@ -146,7 +146,9 @@ class PredictionControllerTest extends PostgresTest {
 
     @Test
     void badRequestsAreRejectedWithTheRightStatus() throws Exception {
-        predict("AAPL", FIRST.plusDays(80), FIRST.plusDays(70)).andExpect(status().isBadRequest());
+        predict("AAPL", FIRST.plusDays(80), FIRST.plusDays(70))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.detail").value("from must not be after to")); // the message reaches the client
         predict("AAPL", FIRST.plusDays(30), FIRST.plusDays(32)).andExpect(status().isBadRequest()); // too little history
         predict("ZZZZ", FIRST.plusDays(80), FIRST.plusDays(82)).andExpect(status().isNotFound());
         mvc.perform(get("/predictions/AAPL").param("from", "2025-03-01")).andExpect(status().isBadRequest()); // no 'to'
