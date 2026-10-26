@@ -23,6 +23,8 @@ def conn():
     try:
         c = psycopg.connect(URL)
     except psycopg.OperationalError:
+        if os.environ.get("CI"):  # on a CI machine a missing database is a failure, never a quiet skip
+            pytest.fail("Postgres is not reachable but CI is set")
         pytest.skip("Postgres is not running (docker compose up -d)")
     schema = f"test_{uuid.uuid4().hex[:8]}"
     c.execute(f"CREATE SCHEMA {schema}")
