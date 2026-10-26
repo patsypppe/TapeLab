@@ -7,6 +7,8 @@ from datetime import date, datetime
 import httpx
 from dotenv import load_dotenv
 
+from .retry import retry
+
 load_dotenv()
 
 TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
@@ -37,10 +39,13 @@ def sec_client() -> httpx.Client:
 
 def _get(client: httpx.Client, url: str) -> httpx.Response:
     """GET a URL after a short pause, so a loop of calls stays under the SEC's rate limit."""
-    time.sleep(PAUSE)
-    response = client.get(url)
-    response.raise_for_status()
-    return response
+    def request() -> httpx.Response:
+        time.sleep(PAUSE)
+        response = client.get(url)
+        response.raise_for_status()
+        return response
+
+    return retry(request)
 
 
 def lookup_cik(client: httpx.Client, ticker: str) -> int:

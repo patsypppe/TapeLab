@@ -4,6 +4,8 @@ import os
 import httpx
 from dotenv import load_dotenv
 
+from ..retry import retry
+
 load_dotenv()  # picks up a local .env if present; real env vars still win
 
 URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
@@ -49,15 +51,19 @@ class GeminiLLM:
     def score_fundamentals(self, evidence: list[str]) -> tuple[float, str]:
         """Ask Gemini for a bullish/bearish score and reason; clamps the score to [-1, 1]."""
         self.budget.spend()
-        r = self._http.post(
-            URL.format(model=self.model),
-            headers={"x-goog-api-key": self.api_key},
-            json={
-                "contents": [{"parts": [{"text": PROMPT.format(evidence="\n---\n".join(evidence))}]}],
-                "generationConfig": {"temperature": 0, "responseMimeType": "application/json"},
-            },
-        )
-        r.raise_for_status()
+        def request() -> httpx.Response:
+            r = self._http.post(
+                URL.format(model=self.model),
+                headers={"x-goog-api-key": self.api_key},
+                json={
+                    "contents": [{"parts": [{"text": PROMPT.format(evidence="\n---\n".join(evidence))}]}],
+                    "generationConfig": {"temperature": 0, "responseMimeType": "application/json"},
+                },
+            )
+            r.raise_for_status()
+            return r
+
+        r = retry(request, base_delay=2.0)
         text = r.json()["candidates"][0]["content"]["parts"][0]["text"]
         data = json.loads(text)
         return max(-1.0, min(1.0, float(data["score"]))), str(data["reason"])

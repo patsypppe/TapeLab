@@ -8,6 +8,7 @@ import httpx
 import psycopg
 
 from .db import connect
+from .retry import retry
 
 CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
 USER_AGENT = "tapelab-research (personal project)"
@@ -55,14 +56,17 @@ def fetch_prices(ticker: str, start: date, end: date, client: httpx.Client) -> l
     def to_unix(d: date) -> int:
         return int(datetime(d.year, d.month, d.day, tzinfo=UTC).timestamp())
 
-    response = client.get(
-        CHART_URL.format(ticker=ticker.upper()),
-        params={"period1": to_unix(start), "period2": to_unix(end), "interval": "1d",
-                "events": "div,splits"},
-        headers={"User-Agent": USER_AGENT},
-    )
-    response.raise_for_status()
-    return parse_yahoo_chart(ticker, response.json())
+    def request() -> httpx.Response:
+        response = client.get(
+            CHART_URL.format(ticker=ticker.upper()),
+            params={"period1": to_unix(start), "period2": to_unix(end), "interval": "1d",
+                    "events": "div,splits"},
+            headers={"User-Agent": USER_AGENT},
+        )
+        response.raise_for_status()
+        return response
+
+    return parse_yahoo_chart(ticker, retry(request).json())
 
 
 def save_prices(conn: psycopg.Connection, rows: list[PriceRow]) -> int:
