@@ -1,3 +1,5 @@
+import random
+
 import pytest
 
 from tradeval.backtest import backtest, backtest_with_positions
@@ -61,3 +63,56 @@ def test_every_rule_is_scored_over_the_same_days_as_the_slowest():
 def test_too_little_history_is_rejected():
     with pytest.raises(ValueError):
         run_comparison(RISING[:40], RULES)
+
+
+class SpyRule:
+    """Records how much price history it is given each day."""
+
+    fast, slow, name = 5, 20, "spy"
+
+    def __init__(self):
+        self.seen: list[list[float]] = []
+
+    def position(self, closes):
+        self.seen.append(list(closes))
+        return 0.0
+
+
+def test_the_engine_hands_each_rule_only_the_history_up_to_that_day():
+    spy = SpyRule()
+    run_comparison(RISING, [spy])
+    # Day t may see closes 0..t and nothing later, so the histories grow one close at a time.
+    assert [len(h) for h in spy.seen] == list(range(1, len(RISING)))
+    assert all(h == RISING[: len(h)] for h in spy.seen)
+
+
+def depends_on_future(positions_for, trials: int = 30, n: int = 400, cut: int = 250) -> bool:
+    """True if decisions up to day `cut` change when only the prices after `cut` change.
+
+    `positions_for(series)` returns the function that picks day t's position. Many different
+    futures are tried: one random future can leave a one-day peeker's decision unchanged by luck.
+    """
+    rng = random.Random(1)
+    price, base = 100.0, []
+    for _ in range(n):
+        price *= 1 + rng.gauss(0.0004, 0.015)
+        base.append(price)
+    _, reference = backtest_with_positions(base, positions_for(base))
+    for _ in range(trials):
+        other = base[:cut] + [rng.uniform(1, 1000) for _ in range(n - cut)]
+        _, changed = backtest_with_positions(other, positions_for(other))
+        if reference[:cut] != changed[:cut]:
+            return True
+    return False
+
+
+def test_no_trend_rule_decision_depends_on_prices_that_come_later():
+    for rule in (TrendRule(5, 20), TrendRule(10, 30), TrendRule(20, 50), TrendRule(50, 200)):
+        assert not depends_on_future(lambda series, r=rule: lambda t: r.position(series[: t + 1])), rule.name
+
+
+def test_the_check_itself_catches_a_rule_that_peeks_one_day_ahead():
+    def cheater(series):
+        return lambda t: 1.0 if t + 1 < len(series) and series[t + 1] > series[t] else 0.0
+
+    assert depends_on_future(cheater)
