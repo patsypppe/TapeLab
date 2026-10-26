@@ -1,5 +1,7 @@
+import json
 import random
 from math import log
+from pathlib import Path
 
 import pytest
 
@@ -80,3 +82,12 @@ def test_no_forecast_depends_on_prices_that_come_later():
 def test_scores_print_with_the_claimed_coverage_beside_the_measured_one():
     text = format_scores(evaluate_forecasts(random_walk(400), "random_walk"))
     assert "in range" in text and "(claimed)" in text and "80%" in text
+
+
+def test_the_python_forecast_still_matches_the_golden_file_the_java_backend_is_tested_against():
+    golden = json.loads((Path(__file__).parent / "fixtures" / "forecast_golden.json").read_text())
+    points = forecast(golden["closes"], horizon=len(golden["points"]), window=golden["window"], model=golden["model"])
+    for p, expected in zip(points, golden["points"], strict=True):
+        assert p.day_ahead == expected["day_ahead"]
+        for field in ("median", "low", "high"):
+            assert getattr(p, field) == pytest.approx(expected[field], rel=1e-12)
