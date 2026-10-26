@@ -1,5 +1,7 @@
 # TapeLab
 
+[![ci](https://github.com/patsypppe/TapeLab/actions/workflows/ci.yml/badge.svg)](https://github.com/patsypppe/TapeLab/actions/workflows/ci.yml)
+
 Two linked components in one repo.
 
 **Filings RAG** is a research assistant over SEC filings: table-aware chunking, hybrid retrieval
